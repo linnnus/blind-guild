@@ -36,3 +36,31 @@
 	font-size: large;
 	font-style: italic;
 }
+
+.achievements {
+	padding: 2rem 1rem;
+
+	/* Use a dark and twisted color to make this band stand out as a separate element. */
+	background-color: #6e1818;
+
+	/* Disperse achievements evenly horisontally */
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+}
+
+.achievements__item {
+	/* Stack the two children vertically */
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.achievements__item__number {
+	/* Numbers should be big and attention grabbing */
+	font-size: 2rem;
+	font-style: bold;
+}
+
+.achievements__item__text {
+}
