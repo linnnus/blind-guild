@@ -1,7 +1,17 @@
 {% extends "base.html" %}
 
+{% block head %}
+	{# Since the background image is declared in the CSS, we can improve
+	loading times by instructing the browser to start loading the image
+	*before* it has even parsed the CSS. #}
+	<link rel="preload" as="image" href="/static/hero.jpeg">
+	<link rel="stylesheet" href="/static/index.css">
+{% endblock %}
+
 {% block content %}
-    <h1>Index</h1>
-    <p class="important">Welcome to my awesome homepage.</p>
+	<div class="hero">
+		<h1 class="hero__title">Blind</h1>
+		<p class="hero__subtitle">An epic guild for epic gamers</p>
+	</div>
 {% endblock %}
 

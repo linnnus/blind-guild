@@ -1,0 +1,38 @@
+/*
+ * This file contains styles specific to the "index" view. The corresponding
+ * HTML/template file is `views/index.html`.
+ */
+
+.hero {
+	/* We want the hero at the top to take up a big portion of the screen,
+	 * while still showing that there's more content to be found below. */
+	min-height: 50vh;
+
+	/* Put children smack-dab in the center */
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+
+	/* Place a cool background image with a radial gradient over it, to give vibezzz and readability. */
+	background-image:
+		radial-gradient(circle at center, rgba(0, 0, 0, 20%) 0, rgba(0, 0, 0, 80%) 100%),
+		url(/static/hero.jpeg);
+	background-size: cover;
+
+	/* TODO: Put some cool image here */
+	background-color: purple;
+	color: white;
+}
+
+.hero__title {
+	font-size: 5rem;
+	margin: 1rem;
+
+	/* TODO: Use (subset) font for this very important text. */
+}
+
+.hero__subtitle {
+	font-size: large;
+	font-style: italic;
+}
