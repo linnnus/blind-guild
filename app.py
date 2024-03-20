@@ -1,4 +1,4 @@
-from bottle import Bottle, run
+from bottle import Bottle, run, static_file
 from bottle import jinja2_template as template
 
 app = Bottle()
@@ -6,5 +6,9 @@ app = Bottle()
 @app.route("/")
 def hello():
     return template("index")
+
+@app.route("/static/<filename>")
+def server_static(filename):
+    return static_file(filename, root="./static/")
 
 run(app, host='localhost', port=8080)

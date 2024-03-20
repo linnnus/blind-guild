@@ -1,0 +1,9 @@
+/*
+ * This file will contain the styles that are to be applied to the WHOLE site.
+ *
+ * No page-specific settings should go in this file.
+ */
+
+html {
+	background-color: red;
+}
