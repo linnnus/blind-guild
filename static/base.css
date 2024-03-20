@@ -13,6 +13,9 @@ html, body {
 	margin: 0;
 
 	font-family: Helvetica, Arial, sans-serif;
+
+	color: white;
+	background-color: #2a2626;
 }
 
 /* Sticky footer
@@ -25,8 +28,11 @@ body {
 }
 
 .navbar {
+	/* A lot of spacing gives a kind of modern look. */
 	padding: 1.5rem;
-	background-color: #eee;
+
+	/* Make the navbar slightly darker than the default background color to "lift it up". */
+	background-color: #1c1c1c;
 
 	display: flex;
 	flex-direction: row;
