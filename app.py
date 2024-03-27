@@ -1,4 +1,4 @@
-from bottle import Bottle, run, static_file
+from bottle import Bottle, run, debug, static_file
 from bottle import jinja2_template as template
 
 app = Bottle()
@@ -11,4 +11,5 @@ def hello():
 def server_static(filename):
     return static_file(filename, root="./static/")
 
-run(app, host='localhost', port=8080)
+debug(True)
+run(app, host='localhost', port=8080, reloader=True)
