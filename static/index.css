@@ -64,3 +64,41 @@
 
 .achievements__item__text {
 }
+
+.boxes {
+	/* The columns should be aligned in the center.
+	 * N.B. margin matches padding of achievements. */
+	max-width: 600px;
+	margin: 2rem auto;
+}
+
+.boxes__column {
+	--gap: 1rem;
+	width: calc(50% - var(--gap) / 2);
+}
+
+.boxes__column--right {
+	float: right;
+}
+
+.boxes__column--left {
+	float: left;
+	margin-right: var(--gap);
+}
+
+.boxes__item {
+
+}
+
+.boxes__header {
+
+}
+
+.boxes__body-text {
+	line-height: 1.5;
+}
+
+.boxes__image {
+	max-width: 100%;
+	height: auto;
+}
