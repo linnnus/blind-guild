@@ -8,9 +8,9 @@ app = Bottle()
 def index():
     return template("index")
 
-@app.route("/static/<filename>")
-def server_static(filename):
-    return static_file(filename, root="./static/")
+@app.route("/<type:re:styles|images>/<filename>")
+def server_static(type, filename):
+    return static_file(filename, root=f"./static/{type}/")
 
 debug(True)
 run(app, host='localhost', port=8080, reloader=True)

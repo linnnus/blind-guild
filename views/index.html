@@ -4,8 +4,8 @@
 	{# Since the background image is declared in the CSS, we can improve
 	loading times by instructing the browser to start loading the image
 	*before* it has even parsed the CSS. #}
-	<link rel="preload" as="image" href="/static/hero.jpeg">
-	<link rel="stylesheet" href="/static/index.css">
+	<link rel="preload" as="image" href="/images/hero.jpeg">
+	<link rel="stylesheet" href="/styles/index.css">
 {% endblock %}
 
 {% block content %}
@@ -57,13 +57,13 @@
 			</section>
 			<section class="boxes__item">
 				<h2 class="boxes__header">Our base</h2>
-				<img class="boxes__image" src="/static/base.jpeg" width="1200" height="675" alt="A very dark and mysterious palace">
+				<img class="boxes__image" src="/images/base.jpeg" width="1200" height="675" alt="A very dark and mysterious palace">
 			</section>			
 		</div>
 		<div class="boxes__column boxes__column--right">
 			<section class="boxes__item">
 				<h2 class="boxes__header">The crew</h2>
-				<img class="boxes__image" src="/static/crew.jpeg" width="1600" height="1200" alt="A crew of high-level WoW players">
+				<img class="boxes__image" src="/images/crew.jpeg" width="1600" height="1200" alt="A crew of high-level WoW players">
 			</section>
 			<section class="boxes__item">
 				<h2 class="boxes__header">Coins</h2>
