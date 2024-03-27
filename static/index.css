@@ -56,13 +56,13 @@
 	align-items: center;
 }
 
-.achievements__item__number {
+.achievements__number {
 	/* Numbers should be big and attention grabbing */
 	font-size: 2rem;
 	font-style: bold;
 }
 
-.achievements__item__text {
+.achievements__text {
 }
 
 .boxes {

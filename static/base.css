@@ -49,7 +49,7 @@ body {
 	gap: 1.5em;
 }
 
-.navbar__links__item {
+.navbar__location {
 	/* remove default link styling */
 	color: inherit;
 	text-decoration: none;

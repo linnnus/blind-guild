@@ -4,7 +4,8 @@ from bottle import jinja2_template as template
 app = Bottle()
 
 @app.route("/")
-def hello():
+@app.route("/index.html")
+def index():
     return template("index")
 
 @app.route("/static/<filename>")
