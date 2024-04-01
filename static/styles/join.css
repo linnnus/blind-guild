@@ -23,6 +23,8 @@ main {
 
 .signup__input {
 	width: 100%;
+	padding: .5rem;
+	border-radius: 5px;
 }
 
 textarea.signup__input {
