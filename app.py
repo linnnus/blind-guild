@@ -8,6 +8,10 @@ app = Bottle()
 def index():
     return template("index")
 
+@app.route("/join.html")
+def join_form():
+    return template("join")
+
 @app.route("/<type:re:styles|images>/<filename>")
 def server_static(type, filename):
     return static_file(filename, root=f"./static/{type}/")
