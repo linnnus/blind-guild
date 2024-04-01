@@ -68,7 +68,7 @@
 .boxes {
 	/* The columns should be aligned in the center.
 	 * N.B. margin matches padding of achievements. */
-	max-width: 600px;
+	max-width: 700px;
 	margin: 2rem auto;
 }
 
