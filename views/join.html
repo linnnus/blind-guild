@@ -16,7 +16,7 @@
 				If your application is accepted, we will accept your in-game guild application.
 				Please make sure you have supmitted such an application in the game's UI.
 			</p>
-			<input class="signup__input" type="text" id="name" placeholder="PoopenFarten43">
+			<input class="signup__input" type="text" id="name" required placeholder="PoopenFarten43">
 		</div>
 		<div class="signup__box">
 			<label class="signup__label" for="preferredRole">Preferred role</label>
@@ -25,7 +25,8 @@
 				As such it's important for us to know which role you like to play as.
 				Please feel free to elaborate in text box below.
 			</p>
-			<select class="signup__input" id="preferredRole">
+			<select required class="signup__input" id="preferredRole">
+				<option selected disabled>Choose a preferred role</option>
 				<option value="dps">DPS</option>
 				<option value="tank">Tank</option>
 				<option value="healer">Healer</option>
@@ -38,7 +39,7 @@
 				Keep in mind that we get a lot of applications for our guild;
 				a simple "i like vidya" won't get you through the golden gates!
 			</p>
-			<textarea class="signup__input" id="motivation" rows="20" placeholder="I would like to join because..."></textarea>
+			<textarea required class="signup__input" id="motivation" rows="20" placeholder="I would like to join because..."></textarea>
 		</div>
 		<div>
 			<button class="signup__submit" type="submit">Submit</button>
