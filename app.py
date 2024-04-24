@@ -6,8 +6,7 @@ import secrets
 
 CLIENT_ID = "x" # DOTENV ligger paa discorden, repoet er publkic saa det
 CLIENT_SECRET = "x" # DOTENV PAHAHAH
-REDIRECT_URI = "http://localhost:8080/callback"
-# REDIRECT_URI = "https://google.com"
+REDIRECT_URI = "https://localhost:8080/callback"
 
 AUTH_BASE_URL = 'https://oauth.battle.net/authorize'
 TOKEN_URL = "https://oauth.battle.net/token"
@@ -45,4 +44,5 @@ def server_static(type, filename):
     return static_file(filename, root=f"./static/{type}/")
 
 debug(True)
-run(app, host='localhost', port=8080, reloader=True)
+run(app, host='localhost', port=8080, reloader=True,
+    server="gunicorn", keyfile="./pki/server.key", certfile="./pki/server.crt")
