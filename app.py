@@ -3,7 +3,6 @@ from bottle import jinja2_template as template
 from oauthlib.oauth2 import WebApplicationClient
 from requests_oauthlib import OAuth2Session
 from dotenv import load_dotenv
-import cherrypy
 import secrets
 import os
 import sqlite3
@@ -70,4 +69,4 @@ def server_static(type, filename):
 
 debug(True)
 run(app, host='localhost', port=8080, reloader=True,
-    server="gunicorn", keyfile="./pki/server.key", certfile="./pki/server.crt")
+    server="waitress", keyfile="./pki/server.key", certfile="./pki/server.crt")
