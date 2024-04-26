@@ -1,0 +1,4 @@
+.env
+# Cert files
+cert.pem
+key.pem
