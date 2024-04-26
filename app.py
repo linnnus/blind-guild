@@ -11,8 +11,7 @@ load_dotenv()
 
 CLIENT_ID = os.environ.get("CLIENT_ID") # DOTENV ligger paa discorden, repoet er publkic saa det
 CLIENT_SECRET = os.environ.get("CLIENT_ID") # DOTENV PAHAHAH
-REDIRECT_URI = "http://localhost:8080/callback"
-# REDIRECT_URI = "https://google.com"
+REDIRECT_URI = "https://localhost:8080/callback"
 
 AUTH_BASE_URL = 'https://oauth.battle.net/authorize'
 TOKEN_URL = "https://oauth.battle.net/token"
@@ -50,4 +49,5 @@ def server_static(type, filename):
     return static_file(filename, root=f"./static/{type}/")
 
 debug(True)
-run(app, host='localhost', port=8080, server="cherrypy", reloader=True, keyfile="./key.pem", certfile="./cert.pem", ssl_version="ssl.PROTOCOL_TLS")
+run(app, host='localhost', port=8080, reloader=True,
+    server="gunicorn", keyfile="./pki/server.key", certfile="./pki/server.crt")
