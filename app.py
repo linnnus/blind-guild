@@ -1,4 +1,4 @@
-from bottle import Bottle, run, debug, static_file, request, redirect, response
+from bottle import Bottle, run, debug, static_file, request, redirect, response, HTTPError
 from bottle import jinja2_template as template
 from oauthlib.oauth2 import WebApplicationClient
 from requests_oauthlib import OAuth2Session
@@ -46,6 +46,23 @@ def callback():
 @app.route("/join.html")
 def join_form():
     return template("join")
+
+@app.route("/join.html", method="POST")
+def join_submission(db):
+    name = request.forms.get("name")
+    preferred_role = request.forms.get("preferredRole")
+    motivation = request.forms.get("motivation")
+
+    if name == None or name.strip() == "":
+        raise HTTPError(400, "Namefield is empty or missing. ( warning: this is not good )")
+    if preferred_role == None:
+        raise HTTPError(400, "Preferred role is empty or missing.")
+    if preferred_role not in ("dps", "tank", "healer"):
+        raise HTTPError(400, "Preferred role must be one of the options (DPS, Tank, Healer) ( idiot )")
+    if motivation == None or motivation.strip() == "":
+        raise HTTPError(400, "Motivitaion field is empty or missing.")
+
+    db.execute(f"INSERT INTO applications(name, role, motivation) VALUES ({name}, {preferred_role}, {motivation})")
 
 @app.route("/<type:re:styles|images>/<filename>")
 def server_static(type, filename):

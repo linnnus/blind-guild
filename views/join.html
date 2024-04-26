@@ -2,10 +2,19 @@
 
 {% block head %}
 	<link rel="stylesheet" href="/styles/join.css">
+	<script type="module">
+		var dropdown = document.getElementById("preferredRole");
+		document.getElementById("applicationForm").addEventListener("submit", (event) => {
+			if ( dropdown.value === "invalid" ) {
+				alert("Pick a preferred role.");
+				event.preventDefault()
+			}
+		});
+	</script>
 {% endblock %}
 
 {% block content %}
-	<form method="POST" class="signup">
+	<form method="POST" class="signup" id="applicationForm">
 		<div class="signup__box">
 			<label class="signup__label" for="name">Name</label>
 			<p>
@@ -16,7 +25,7 @@
 				If your application is accepted, we will accept your in-game guild application.
 				Please make sure you have supmitted such an application in the game's UI.
 			</p>
-			<input class="signup__input" type="text" id="name" required placeholder="PoopenFarten43">
+			<input class="signup__input" type="text" id="name" name="name" required placeholder="PoopenFarten43" minlength="2" maxlength="12">
 		</div>
 		<div class="signup__box">
 			<label class="signup__label" for="preferredRole">Preferred role</label>
@@ -25,8 +34,8 @@
 				As such it's important for us to know which role you like to play as.
 				Please feel free to elaborate in text box below.
 			</p>
-			<select required class="signup__input" id="preferredRole">
-				<option selected disabled>Choose a preferred role</option>
+			<select required class="signup__input" id="preferredRole" name="preferredRole">
+				<option value="invalid" selected disabled>Choose a preferred role</option>
 				<option value="dps">DPS</option>
 				<option value="tank">Tank</option>
 				<option value="healer">Healer</option>
@@ -39,7 +48,7 @@
 				Keep in mind that we get a lot of applications for our guild;
 				a simple "i like vidya" won't get you through the golden gates!
 			</p>
-			<textarea required class="signup__input" id="motivation" rows="20" placeholder="I would like to join because..."></textarea>
+			<textarea required class="signup__input" id="motivation" name="motivation" rows="20" placeholder="I would like to join because..."></textarea>
 		</div>
 		<div>
 			<button class="signup__submit" type="submit">Submit</button>
