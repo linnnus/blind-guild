@@ -2,10 +2,15 @@ from bottle import Bottle, run, debug, static_file, request, redirect, response
 from bottle import jinja2_template as template
 from oauthlib.oauth2 import WebApplicationClient
 from requests_oauthlib import OAuth2Session
+from dotenv import load_dotenv
+import cherrypy
 import secrets
+import os
 
-CLIENT_ID = "x" # DOTENV ligger paa discorden, repoet er publkic saa det
-CLIENT_SECRET = "x" # DOTENV PAHAHAH
+load_dotenv()
+
+CLIENT_ID = os.environ.get("CLIENT_ID") # DOTENV ligger paa discorden, repoet er publkic saa det
+CLIENT_SECRET = os.environ.get("CLIENT_ID") # DOTENV PAHAHAH
 REDIRECT_URI = "http://localhost:8080/callback"
 # REDIRECT_URI = "https://google.com"
 
@@ -45,4 +50,4 @@ def server_static(type, filename):
     return static_file(filename, root=f"./static/{type}/")
 
 debug(True)
-run(app, host='localhost', port=8080, reloader=True)
+run(app, host='localhost', port=8080, server="cherrypy", reloader=True, keyfile="./key.pem", certfile="./cert.pem", ssl_version="ssl.PROTOCOL_TLS")
