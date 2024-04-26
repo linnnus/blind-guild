@@ -6,18 +6,21 @@ from dotenv import load_dotenv
 import cherrypy
 import secrets
 import os
+import sqlite3
+from bottle.ext import sqlite
 
 load_dotenv()
 
 CLIENT_ID = os.environ.get("CLIENT_ID") # DOTENV ligger paa discorden, repoet er publkic saa det
 CLIENT_SECRET = os.environ.get("CLIENT_ID") # DOTENV PAHAHAH
 REDIRECT_URI = "https://localhost:8080/callback"
-
 AUTH_BASE_URL = 'https://oauth.battle.net/authorize'
 TOKEN_URL = "https://oauth.battle.net/token"
 client = WebApplicationClient(CLIENT_ID)
 
 app = Bottle()
+plugin = sqlite.Plugin(dbfile="thisisadatabasethatcontainsdata.db")
+app.install(plugin)
 
 @app.route("/")
 @app.route("/index.html")
