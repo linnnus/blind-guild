@@ -43,11 +43,15 @@ def callback():
 
     return f'Access token: {token_response.get("access_token")}'
 
-@app.route("/join.html")
-def join_form():
-    return template("join")
+@app.route("/join_intro.html")
+def join_intro():
+    return template("join_intro")
 
-@app.route("/join.html", method="POST")
+@app.route("/join_form.html")
+def join_form():
+    return template("join_form")
+
+@app.route("/join_form.html", method="POST")
 def join_submission(db):
     name = request.forms.get("name")
     preferred_role = request.forms.get("preferredRole")
@@ -63,6 +67,8 @@ def join_submission(db):
         raise HTTPError(400, "Motivitaion field is empty or missing.")
 
     db.execute(f"INSERT INTO applications(name, role, motivation) VALUES ({name}, {preferred_role}, {motivation})")
+
+    return template("join_success")
 
 @app.route("/<type:re:styles|images>/<filename>")
 def server_static(type, filename):
