@@ -1,4 +1,9 @@
+# Secrets
 .env
+
 # Cert files
 cert.pem
 key.pem
+
+# Database
+thisisadatabasethatcontainsdata.db
