@@ -18,8 +18,22 @@ AUTH_BASE_URL = 'https://oauth.battle.net/authorize'
 TOKEN_URL = "https://oauth.battle.net/token"
 client = WebApplicationClient(CLIENT_ID)
 
+DB_PATH = "thisisadatabasethatcontainsdata.db"
+
+connection = sqlite3.connect(DB_PATH)
+cursor = connection.cursor()
+cursor.executescript("""
+    CREATE TABLE IF NOT EXISTS applications (
+        username VARCHAR(12) NOT NULL,
+        preferredRole VARCHAR(6) NOT NULL,
+        motivation TEXT NOT NULL
+    );
+""")
+cursor.close()
+connection.close()
+
 app = Bottle()
-plugin = sqlite.Plugin(dbfile="thisisadatabasethatcontainsdata.db")
+plugin = sqlite.Plugin(dbfile=DB_PATH)
 app.install(plugin)
 
 @app.route("/")
@@ -52,7 +66,7 @@ def join_form():
     return template("join_form")
 
 @app.route("/join_form.html", method="POST")
-def join_submission(db):
+def join_submission(db: sqlite3.Connection):
     name = request.forms.get("name")
     preferred_role = request.forms.get("preferredRole")
     motivation = request.forms.get("motivation")
@@ -66,7 +80,7 @@ def join_submission(db):
     if motivation == None or motivation.strip() == "":
         raise HTTPError(400, "Motivitaion field is empty or missing.")
 
-    db.execute(f"INSERT INTO applications(name, role, motivation) VALUES ({name}, {preferred_role}, {motivation})")
+    db.execute(f"INSERT INTO applications(username, preferredRole, motivation) VALUES (?, ?, ?)", (name, preferred_role, motivation))
 
     return template("join_success")
 
