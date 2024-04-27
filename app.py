@@ -1,3 +1,4 @@
+from gevent import monkey; monkey.patch_all() # MUST BE FIRST IMPORT
 from bottle import Bottle, run, debug, static_file, request, redirect, response, HTTPError
 from bottle import jinja2_template as template
 from oauthlib.oauth2 import WebApplicationClient
@@ -69,4 +70,4 @@ def server_static(type, filename):
 
 debug(True)
 run(app, host='localhost', port=8080, reloader=True,
-    server="waitress", keyfile="./pki/server.key", certfile="./pki/server.crt")
+    server="gevent", keyfile="./pki/server.key", certfile="./pki/server.crt")
