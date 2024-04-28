@@ -12,7 +12,7 @@ from bottle.ext import sqlite
 load_dotenv()
 
 CLIENT_ID = os.environ.get("CLIENT_ID") # DOTENV ligger paa discorden, repoet er publkic saa det
-CLIENT_SECRET = os.environ.get("CLIENT_ID") # DOTENV PAHAHAH
+CLIENT_SECRET = os.environ.get("CLIENT_SECRET") # DOTENV PAHAHAH
 REDIRECT_URI = "https://localhost:8080/callback"
 AUTH_BASE_URL = 'https://oauth.battle.net/authorize'
 TOKEN_URL = "https://oauth.battle.net/token"
