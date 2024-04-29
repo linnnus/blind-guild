@@ -60,3 +60,14 @@ footer {
 	font-size: small;
 	margin: 1rem;
 }
+
+/* Chill link styling */
+a {
+	/* dark and twisted color, lighter for contrast */
+	color: #a27d7d;
+	text-decoration: underline;
+}
+
+a:visited {
+	color: inherit;
+}

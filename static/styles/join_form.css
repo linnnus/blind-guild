@@ -1,0 +1,33 @@
+/*
+ * This file contains styles specific to the "join_form" view. The corresponding
+ * HTML/template file is `views/join_form.html`.
+ *
+ * See also the file `static/styles/join_common.css` which contains some styles
+ * which are reused among the "join_" group of views.
+ */
+
+.signup {
+
+}
+
+.signup__box {
+	margin-bottom: 1reM;
+}
+
+.signup__label {
+	font-weight: bold;
+}
+
+.signup__input {
+	width: 100%;
+	padding: .5rem;
+	border-radius: 5px;
+}
+
+textarea.signup__input {
+	/* Remove UA's default monospace font */
+	font-family: inherit;
+
+	/* Horizontal resizing totally breaks our layout :( */
+	resize: vertical;
+}

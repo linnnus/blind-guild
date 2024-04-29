@@ -1,0 +1,44 @@
+/*
+ * This file contains styles specific to the "join" views. There are a couple
+ * of views which are all part of the same user flow and reuse some styles. The
+ * corresponding HTML/template files are `views/join_*.html`.
+ */
+
+main {
+	/* Center align and keep width readable. */
+	width: 100%;
+	max-width: 500px;
+	margin: 2rem auto;
+
+}
+
+/* Some pages are text heavy. Keep a nice line distance. */
+p { line-height: 1.5; }
+
+.button {
+	/* Horizontally center the element */
+	display: block;
+	margin-inline: auto;
+
+	/* Make it look dark and twisted */
+	background-color: #6e1818;
+	color: white;
+	border: none;
+	border-radius: 500px;
+	padding: 1rem;
+	font-size: large;
+}
+
+/* The usual dimming effect makes interaction feel more tactile */
+.button:hover { filter: brightness(90%); }
+.button:active { filter: brightness(60%); }
+
+/* We use button-styles anchor-tags to preserve HTML semantics. */
+a.button {
+	/* Remove link styling */
+	color: inherit;
+	text-decoration: none;
+
+	/* Inline elements expand by default. */
+	width: fit-content;
+}

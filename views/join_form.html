@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 
 {% block head %}
-	<link rel="stylesheet" href="/styles/join.css">
+	<link rel="stylesheet" href="/styles/join_common.css">
+	<link rel="stylesheet" href="/styles/join_form.css">
 	<script type="module">
 		var dropdown = document.getElementById("preferredRole");
 		document.getElementById("applicationForm").addEventListener("submit", (event) => {
@@ -15,6 +16,7 @@
 
 {% block content %}
 	<form method="POST" class="signup" id="applicationForm">
+		<input type="hidden" name="userId" value="{{ user_id | e }}">
 		<div class="signup__box">
 			<label class="signup__label" for="name">Name</label>
 			<p>
@@ -51,7 +53,7 @@
 			<textarea required class="signup__input" id="motivation" name="motivation" rows="20" placeholder="I would like to join because..."></textarea>
 		</div>
 		<div>
-			<button class="signup__submit" type="submit">Submit</button>
+			<button class="button" type="submit">Submit</button>
 		</div>
 	</form>
 {% endblock %}
