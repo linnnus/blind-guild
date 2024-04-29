@@ -16,6 +16,7 @@
 
 {% block content %}
 	<form method="POST" class="signup" id="applicationForm">
+		<input type="hidden" name="userId" value="{{ user_id | e }}">
 		<div class="signup__box">
 			<label class="signup__label" for="name">Name</label>
 			<p>

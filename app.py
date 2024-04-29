@@ -26,7 +26,8 @@ cursor.executescript("""
     CREATE TABLE IF NOT EXISTS applications (
         username VARCHAR(12) NOT NULL,
         preferredRole VARCHAR(6) NOT NULL,
-        motivation TEXT NOT NULL
+        motivation TEXT NOT NULL,
+        userId INTEGER NOT NULL
     );
 """)
 cursor.close()
@@ -41,6 +42,10 @@ app.install(plugin)
 def index():
     return template("index")
 
+@app.route("/join_intro.html")
+def join_intro():
+    return template("join_intro")
+
 @app.route("/battle")
 def battle():
     state = secrets.token_urlsafe(16)
@@ -49,27 +54,32 @@ def battle():
     return redirect(authorization_url)
 
 @app.route('/callback')
-def callback():
+def join_form():
     state = request.get_cookie('oauth_state')
-    code = request.query.get('code')
     oauth2_session = OAuth2Session(CLIENT_ID, state=state, redirect_uri=REDIRECT_URI)
     token_response = oauth2_session.fetch_token(TOKEN_URL, authorization_response=request.url, client_secret=CLIENT_SECRET)
 
-    return f'Access token: {token_response.get("access_token")}'
+    # Get the user ID of the just authenticated user. As per the API
+    # documentation, this should be used to identify users.
+    #
+    # See: https://develop.battle.net/documentation/guides/regionality-and-apis#:~:text=Developers%20should%20use%20an%20accountId
+    query_parameters = {
+            "region": "eu",
+    }
+    response = oauth2_session.get("https://oauth.battle.net/oauth/userinfo", params=query_parameters)
+    response.raise_for_status()
+    user_info = response.json()
+    user_id = user_info["id"]
 
-@app.route("/join_intro.html")
-def join_intro():
-    return template("join_intro")
+    # We pass the token retrieved here so it can be submitted with the rest of the application.
+    return template("join_form", user_id=user_id)
 
-@app.route("/join_form.html")
-def join_form():
-    return template("join_form")
-
-@app.route("/join_form.html", method="POST")
+@app.route("/callback", method="POST")
 def join_submission(db: sqlite3.Connection):
     name = request.forms.get("name")
     preferred_role = request.forms.get("preferredRole")
     motivation = request.forms.get("motivation")
+    user_id = request.forms.get("userId")
 
     if name == None or name.strip() == "":
         raise HTTPError(400, "Namefield is empty or missing. ( warning: this is not good )")
@@ -79,8 +89,11 @@ def join_submission(db: sqlite3.Connection):
         raise HTTPError(400, "Preferred role must be one of the options (DPS, Tank, Healer) ( idiot )")
     if motivation == None or motivation.strip() == "":
         raise HTTPError(400, "Motivitaion field is empty or missing.")
+    if user_id == None or not user_id.isdigit():
+        raise HTTPError(400, "Missing or invalid user id")
 
-    db.execute(f"INSERT INTO applications(username, preferredRole, motivation) VALUES (?, ?, ?)", (name, preferred_role, motivation))
+    # FIXME: The user id is a 64-bit unsigned integer which may be larger than the INTEGER type of sqlite3.
+    db.execute(f"INSERT INTO applications(username, preferredRole, motivation, userId) VALUES (?, ?, ?, ?)", (name, preferred_role, motivation, user_id))
 
     return template("join_success")
 
