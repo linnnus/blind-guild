@@ -27,7 +27,7 @@ cursor.executescript("""
         username VARCHAR(12) NOT NULL,
         preferredRole VARCHAR(6) NOT NULL,
         motivation TEXT NOT NULL,
-        userId INTEGER NOT NULL
+        userId INTEGER UNIQUE NOT NULL
     );
 """)
 cursor.close()
@@ -92,8 +92,16 @@ def join_submission(db: sqlite3.Connection):
     if user_id == None or not user_id.isdigit():
         raise HTTPError(400, "Missing or invalid user id")
 
-    # FIXME: The user id is a 64-bit unsigned integer which may be larger than the INTEGER type of sqlite3.
-    db.execute(f"INSERT INTO applications(username, preferredRole, motivation, userId) VALUES (?, ?, ?, ?)", (name, preferred_role, motivation, user_id))
+    try:
+        db.execute("INSERT INTO applications(username, preferredRole, motivation, userId) VALUES (?, ?, ?, ?)", (name, preferred_role, motivation, user_id))
+    except sqlite3.IntegrityError as e:
+        print(e.sqlite_errorcode == sqlite3.SQLITE_CONSTRAINT_UNIQUE)
+        print(str(e))
+        if e.sqlite_errorcode == sqlite3.SQLITE_CONSTRAINT_UNIQUE:
+            # The database (model) rejected the application because the unique constraint wasn't met!
+            raise HTTPError(400, "You've already submitted an application!")
+        else:
+            raise
 
     return template("join_success")
 
