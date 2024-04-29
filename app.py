@@ -17,6 +17,17 @@ AUTH_BASE_URL = 'https://oauth.battle.net/authorize'
 TOKEN_URL = "https://oauth.battle.net/token"
 client = WebApplicationClient(CLIENT_ID)
 
+db = sqlite3.connect("thisisadatabasethatcontainsdata.db")
+db.execute("""
+    CREATE TABLE IF NOT EXISTS applications (
+        name VARCHAR(32),
+        role VARCHAR(32),
+        motivation TEXT
+    )
+""")
+db.commit()
+db.close()
+
 app = Bottle()
 plugin = sqlite.Plugin(dbfile="thisisadatabasethatcontainsdata.db")
 app.install(plugin)
@@ -47,7 +58,7 @@ def join_form():
     return template("join")
 
 @app.route("/join.html", method="POST")
-def join_submission(db):
+def join_submission(db: sqlite3.Connection):
     name = request.forms.get("name")
     preferred_role = request.forms.get("preferredRole")
     motivation = request.forms.get("motivation")
