@@ -71,8 +71,10 @@ def join_submission(db: sqlite3.Connection):
         raise HTTPError(400, "Preferred role must be one of the options (DPS, Tank, Healer) ( idiot )")
     if motivation == None or motivation.strip() == "":
         raise HTTPError(400, "Motivitaion field is empty or missing.")
+    
+    db.execute("SELECT * FROM applications").fetchone()
 
-    db.execute(f"INSERT INTO applications(name, role, motivation) VALUES ({name}, {preferred_role}, {motivation})")
+    db.execute("INSERT INTO applications(name, role, motivation) VALUES (?, ?, ?)", (name, preferred_role, motivation))
 
 @app.route("/<type:re:styles|images>/<filename>")
 def server_static(type, filename):
