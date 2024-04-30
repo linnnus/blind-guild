@@ -11,6 +11,9 @@ from bottle.ext import sqlite
 
 load_dotenv()
 
+REGION = "eu"
+
+# OAuth2 variable declarations
 CLIENT_ID = os.environ.get("CLIENT_ID") # DOTENV ligger paa discorden, repoet er publkic saa det
 CLIENT_SECRET = os.environ.get("CLIENT_SECRET") # DOTENV PAHAHAH
 REDIRECT_URI = "https://localhost:8080/callback"
@@ -50,7 +53,7 @@ def join_intro():
 def battle():
     state = secrets.token_urlsafe(16)
     response.set_cookie('oauth_state', state)
-    authorization_url = client.prepare_request_uri(AUTH_BASE_URL, redirect_uri=REDIRECT_URI, state=state)
+    authorization_url = client.prepare_request_uri(AUTH_BASE_URL, redirect_uri=REDIRECT_URI, state=state, scope="wow.profile")
     return redirect(authorization_url)
 
 @app.route('/callback')
@@ -64,15 +67,30 @@ def join_form():
     #
     # See: https://develop.battle.net/documentation/guides/regionality-and-apis#:~:text=Developers%20should%20use%20an%20accountId
     query_parameters = {
-            "region": "eu",
+            "region": REGION,
     }
     response = oauth2_session.get("https://oauth.battle.net/oauth/userinfo", params=query_parameters)
     response.raise_for_status()
     user_info = response.json()
     user_id = user_info["id"]
 
+    # do we have it? yes
+    query_parameters = {
+        "region": REGION,
+        "namespace": f"profile-{REGION}",
+        "locale": "en_US",
+    }
+    response = oauth2_session.get(f"https://{REGION}.api.blizzard.com/profile/user/wow", params=query_parameters)
+    response.raise_for_status()
+    data = response.json()
+    print(response.text)
+    characters = []
+    for account in data["wow_accounts"]:
+        for character in account["characters"]:
+            characters.append(character)
+
     # We pass the token retrieved here so it can be submitted with the rest of the application.
-    return template("join_form", user_id=user_id)
+    return template("join_form", user_id=user_id, characters=characters)
 
 @app.route("/callback", method="POST")
 def join_submission(db: sqlite3.Connection):

@@ -27,7 +27,11 @@
 				If your application is accepted, we will accept your in-game guild application.
 				Please make sure you have supmitted such an application in the game's UI.
 			</p>
-			<input class="signup__input" type="text" id="name" name="name" required placeholder="PoopenFarten43" minlength="2" maxlength="12">
+			<select class="signup__input" id="name" name="name" required>
+				{% for character in characters %}
+				<option value="{{ character['id'] | e }}">{{ character['name'] | e }}</option>
+				{% endfor %}
+			</select>
 		</div>
 		<div class="signup__box">
 			<label class="signup__label" for="preferredRole">Preferred role</label>
