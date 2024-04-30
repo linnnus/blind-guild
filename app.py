@@ -21,6 +21,7 @@ AUTH_BASE_URL = 'https://oauth.battle.net/authorize'
 TOKEN_URL = "https://oauth.battle.net/token"
 client = WebApplicationClient(CLIENT_ID)
 
+# Database initialization
 DB_PATH = "thisisadatabasethatcontainsdata.db"
 
 connection = sqlite3.connect(DB_PATH)
@@ -30,11 +31,14 @@ cursor.executescript("""
         username VARCHAR(12) NOT NULL,
         preferredRole VARCHAR(6) NOT NULL,
         motivation TEXT NOT NULL,
+                     
+    CREATE TABLE IF NOT EXISTS users (
         userId INTEGER UNIQUE NOT NULL
     );
 """)
 cursor.close()
 connection.close()
+
 
 app = Bottle()
 plugin = sqlite.Plugin(dbfile=DB_PATH)
@@ -128,5 +132,4 @@ def server_static(type, filename):
     return static_file(filename, root=f"./static/{type}/")
 
 debug(True)
-run(app, host='localhost', port=8080, reloader=True,
-    server="gevent", keyfile="./pki/server.key", certfile="./pki/server.crt")
+run(app, host='localhost', port=8080, server="gevent", keyfile="./pki/server.key", certfile="./pki/server.crt", reloader=True)
