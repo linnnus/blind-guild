@@ -1,0 +1,50 @@
+/*
+ * This file contains styles specific to the "manage" view. The corresponding
+ * HTML/template file is `views/manage.html`.
+ */
+
+main {
+	/* Center align and keep width readable. */
+	width: 100%;
+	max-width: 500px;
+	margin: 2rem auto;
+}
+
+.applications__item {
+    border: 2px solid white;
+    border-radius: 5px;
+    padding: 1rem;
+}
+
+.application__username {
+    font-size: x-large;
+}
+
+.applications {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.action {
+    display: contents;
+}
+
+.action__button {
+    width: 48%;
+}
+
+.action__button:hover { filter: brightness(90%); }
+.action__button:active { filter: brightness(60%); }
+
+.action__button--accept {
+    border: 2px solid #4b694b;
+    background-color: #608660;
+    color: white;
+}
+
+.action__button--reject {
+	border: 2px solid #891818;
+	background-color: #cd4747;
+	color: white;
+}
