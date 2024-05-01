@@ -1,6 +1,6 @@
 from gevent import monkey; monkey.patch_all() # MUST BE FIRST IMPORT
 from bottle import Bottle, run, debug, static_file, request, redirect, response, HTTPError
-from bottle import jinja2_template as template
+from bottle import jinja2_template
 from oauthlib.oauth2 import WebApplicationClient
 from requests_oauthlib import OAuth2Session
 from dotenv import load_dotenv
@@ -8,6 +8,7 @@ import secrets
 import os
 import sqlite3
 from bottle.ext import sqlite
+from beaker.middleware import SessionMiddleware
 
 load_dotenv()
 
@@ -16,9 +17,11 @@ REGION = "eu"
 # OAuth2 variable declarations
 CLIENT_ID = os.environ.get("CLIENT_ID") # DOTENV ligger paa discorden, repoet er publkic saa det
 CLIENT_SECRET = os.environ.get("CLIENT_SECRET") # DOTENV PAHAHAH
-REDIRECT_URI = "https://localhost:8080/callback"
+LOGIN_REDIRECT_URI = "https://localhost:8080/login_callback"
+JOIN_REDIRECT_URI = "https://localhost:8080/join_callback"
 AUTH_BASE_URL = 'https://oauth.battle.net/authorize'
 TOKEN_URL = "https://oauth.battle.net/token"
+SCOPE = "wow.profile"
 client = WebApplicationClient(CLIENT_ID)
 
 # Database initialization
@@ -31,23 +34,68 @@ cursor.executescript("""
         username VARCHAR(12) NOT NULL,
         preferredRole VARCHAR(6) NOT NULL,
         motivation TEXT NOT NULL,
-                     
-    CREATE TABLE IF NOT EXISTS users (
         userId INTEGER UNIQUE NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS users (
+        userId INTEGER UNIQUE NOT NULL,
+        role VARCHAR(6) NOT NULL
+    );
+    INSERT OR IGNORE INTO users(userId, role) VALUES (1165955606, 'dps');
 """)
 cursor.close()
 connection.close()
 
-
 app = Bottle()
-plugin = sqlite.Plugin(dbfile=DB_PATH)
-app.install(plugin)
+app.install(sqlite.Plugin(dbfile=DB_PATH))
+app_wrapped = SessionMiddleware(app, config={
+    "session.type": "file",
+    "session.cookie_expires": 300,
+    "session.data_dir": "./sessions",
+    "session.auto": True,
+})
+
+def template(*args, **kwargs):
+    session = request.environ.get("beaker.session")
+    assert session is not None
+    logged_in = session.has_key("user_id")
+    return jinja2_template(*args, **kwargs, logged_in=logged_in)
 
 @app.route("/")
 @app.route("/index.html")
 def index():
     return template("index")
+
+@app.route("/login")
+def login():
+    state = secrets.token_urlsafe(16)
+    response.set_cookie('oauth_state', state)
+    authorization_url = client.prepare_request_uri(AUTH_BASE_URL, redirect_uri=LOGIN_REDIRECT_URI, state=state, scope=SCOPE, wad="foo")
+    return redirect(authorization_url)
+
+@app.route("/login_callback")
+def login_callback(db: sqlite3.Connection):
+    # Get user ID associated with auth token
+    state = request.get_cookie('oauth_state')
+    oauth2_session = OAuth2Session(client_id=CLIENT_ID, state=state, redirect_uri=LOGIN_REDIRECT_URI)
+    oauth2_session.fetch_token(TOKEN_URL, authorization_response=request.url, client_secret=CLIENT_SECRET)
+    query_parameters = { "region": REGION }
+    response = oauth2_session.get("https://oauth.battle.net/oauth/userinfo", params=query_parameters)
+    response.raise_for_status()
+    user_info = response.json()
+    user_id = user_info["id"]
+
+    # Ensure user in database
+    row = db.execute("SELECT * FROM users WHERE userId = ?", [user_id]).fetchone()
+    if row == None:
+        raise HTTPError(404, "User not found")
+
+    # Store session for subsequent requests
+    session = request.environ.get("beaker.session")
+    session["user_id"] = user_id
+    session.save()
+
+    return redirect("/index.html")
 
 @app.route("/join_intro.html")
 def join_intro():
@@ -57,14 +105,15 @@ def join_intro():
 def battle():
     state = secrets.token_urlsafe(16)
     response.set_cookie('oauth_state', state)
-    authorization_url = client.prepare_request_uri(AUTH_BASE_URL, redirect_uri=REDIRECT_URI, state=state, scope="wow.profile")
+    authorization_url = client.prepare_request_uri(AUTH_BASE_URL, redirect_uri=JOIN_REDIRECT_URI, state=state, scope=SCOPE)
     return redirect(authorization_url)
 
 @app.route('/callback')
+@app.route('/join_callback')
 def join_form():
     state = request.get_cookie('oauth_state')
-    oauth2_session = OAuth2Session(CLIENT_ID, state=state, redirect_uri=REDIRECT_URI)
-    token_response = oauth2_session.fetch_token(TOKEN_URL, authorization_response=request.url, client_secret=CLIENT_SECRET)
+    oauth2_session = OAuth2Session(CLIENT_ID, state=state, redirect_uri=JOIN_REDIRECT_URI)
+    oauth2_session.fetch_token(TOKEN_URL, authorization_response=request.url, client_secret=CLIENT_SECRET)
 
     # Get the user ID of the just authenticated user. As per the API
     # documentation, this should be used to identify users.
@@ -132,4 +181,4 @@ def server_static(type, filename):
     return static_file(filename, root=f"./static/{type}/")
 
 debug(True)
-run(app, host='localhost', port=8080, server="gevent", keyfile="./pki/server.key", certfile="./pki/server.crt", reloader=True)
+run(app_wrapped, host='localhost', port=8080, server="gevent", keyfile="./pki/server.key", certfile="./pki/server.crt", reloader=True)

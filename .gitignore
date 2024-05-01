@@ -7,3 +7,6 @@ key.pem
 
 # Database
 thisisadatabasethatcontainsdata.db
+
+# Sessions stored here
+sessions/
