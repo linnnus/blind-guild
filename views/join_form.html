@@ -4,7 +4,7 @@
 	<link rel="stylesheet" href="/styles/join_common.css">
 	<link rel="stylesheet" href="/styles/join_form.css">
 	<script type="module">
-		var dropdown = document.getElementById("preferredRole");
+		var dropdown = document.getElementById("shortRoleName");
 		document.getElementById("applicationForm").addEventListener("submit", (event) => {
 			if ( dropdown.value === "invalid" ) {
 				alert("Pick a preferred role.");
@@ -34,17 +34,17 @@
 			</select>
 		</div>
 		<div class="signup__box">
-			<label class="signup__label" for="preferredRole">Preferred role</label>
+			<label class="signup__label" for="shortRoleName">Preferred role</label>
 			<p>
 				We are always looking ot balance our guild.
 				As such it's important for us to know which role you like to play as.
 				Please feel free to elaborate in text box below.
 			</p>
-			<select required class="signup__input" id="preferredRole" name="preferredRole">
+			<select required class="signup__input" id="shortRoleName" name="shortRoleName">
 				<option value="invalid" selected disabled>Choose a preferred role</option>
-				<option value="dps">DPS</option>
-				<option value="tank">Tank</option>
-				<option value="healer">Healer</option>
+				{% for role in roles %}
+					<option value="{{ role.shortName | e }}">{{ role.humanName | e }} ({{ role.description | e }})</option>
+				{% endfor %}
 			</select>
 		</div>
 		<div class="signup__box">

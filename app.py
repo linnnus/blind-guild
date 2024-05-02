@@ -32,30 +32,45 @@ DB_PATH = "thisisadatabasethatcontainsdata.db"
 connection = sqlite3.connect(DB_PATH)
 cursor = connection.cursor()
 cursor.executescript("""
+    CREATE TABLE IF NOT EXISTS roles (
+        id INTEGER PRIMARY KEY,
+        shortName VARCHAR(5) UNIQUE NOT NULL,
+        humanName VARCHAR(16) NOT NULL,
+        description TEXT NOT NULL
+    );
+    INSERT OR IGNORE
+    INTO roles(shortName, humanName, description)
+    VALUES
+        ('dps', 'DPS', 'focused on doing as much damage as possible, as quickly as possible'),
+        ('healer', 'Healer', 'the most beta class'),
+        ('tank', 'Tank', 'sigma male grindset class');
+
     CREATE TABLE IF NOT EXISTS applications (
         id INTEGER PRIMARY KEY,
         username VARCHAR(12) NOT NULL,
         userId INTEGER UNIQUE NOT NULL,
-        preferredRole VARCHAR(6) NOT NULL,
+        roleId INTEGER NOT NULL,
         motivation TEXT NOT NULL,
-        applicationTime INT NOT NULL          -- unix timestamp
+        applicationTime INT NOT NULL, -- unix timestamp
+        FOREIGN KEY(roleId) REFERENCES roles(id)
     );
     INSERT OR IGNORE
-    INTO applications(username, userId, preferredRole, motivation, applicationTime)
+    INTO applications(username, userId, roleId, motivation, applicationTime)
     VALUES
-        ('DillerBlaster69', 0, 'dps',    'fake motivation',    strftime('%s','now')),
-        ('DillerDiller',    1, 'healer', 'fake motivation',    strftime('%s','now')),
-        ('diller123',       2, 'tank',   'fake motivation',    strftime('%s','now')),
-        ('susamongus',      3, 'dps',    'fake motivation #4', strftime('%s','now'));
+        ('DillerBlaster69', 0, 0, 'fake motivation',    strftime('%s','now')),
+        ('DillerDiller',    1, 1, 'fake motivation',    strftime('%s','now')),
+        ('diller123',       2, 2, 'fake motivation',    strftime('%s','now')),
+        ('susamongus',      3, 2, 'fake motivation #4', strftime('%s','now'));
 
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY,
         username VARCHAR(12) NOT NULL,
         userId INTEGER UNIQUE NOT NULL,
-        preferredRole VARCHAR(6) NOT NULL,
-        joinTime INT NOT NULL                 -- unix timestamp
+        roleId INTEGER NOT NULL,
+        joinTime INT NOT NULL, -- unix timestamp
+        FOREIGN KEY(roleId) REFERENCES roles(id)
     );
-    INSERT OR IGNORE INTO users(username, userId, preferredRole, joinTime) VALUES ('linuspwn', 1165955606, 'dps', strftime('%s','now'));
+    INSERT OR IGNORE INTO users(username, userId, roleId, joinTime) VALUES ('linuspwn', 1165955606, 0, strftime('%s','now'));
 """)
 cursor.close()
 connection.close()
@@ -155,7 +170,7 @@ def battle():
 
 @app.route('/callback')
 @app.route('/join_callback')
-def join_form():
+def join_form(db: sqlite3.Connection):
     state = request.get_cookie('oauth_state')
     oauth2_session = OAuth2Session(CLIENT_ID, state=state, redirect_uri=JOIN_REDIRECT_URI)
     oauth2_session.fetch_token(TOKEN_URL, authorization_response=request.url, client_secret=CLIENT_SECRET)
@@ -179,6 +194,8 @@ def join_form():
         "locale": "en_US",
     }
     response = oauth2_session.get(f"https://{REGION}.api.blizzard.com/profile/user/wow", params=query_parameters)
+    if response.status_code == 404:
+        raise HTTPError(404, "The account you logged in does not have a WoW profile")
     response.raise_for_status()
     data = response.json()
     print(response.text)
@@ -187,33 +204,38 @@ def join_form():
         for character in account["characters"]:
             characters.append(character)
 
+    roles = db.execute("SELECT * FROM roles");
+
     # We pass the token retrieved here so it can be submitted with the rest of the application.
-    return template("join_form", user_id=user_id, characters=characters)
+    return template("join_form", user_id=user_id, characters=characters, roles=roles)
 
 @app.route("/callback", method="POST")
 def join_submission(db: sqlite3.Connection):
     name = request.forms.get("name")
-    preferred_role = request.forms.get("preferredRole")
+    short_role_name = request.forms.get("shortRoleName")
     motivation = request.forms.get("motivation")
     user_id = request.forms.get("userId")
 
     if name == None or name.strip() == "":
         raise HTTPError(400, "Namefield is empty or missing. ( warning: this is not good )")
-    if preferred_role == None:
-        raise HTTPError(400, "Preferred role is empty or missing.")
-    if preferred_role not in ("dps", "tank", "healer"):
-        raise HTTPError(400, "Preferred role must be one of the options (DPS, Tank, Healer) ( idiot )")
+    if short_role_name == None:
+        raise HTTPError(400, "Short role name is empty or missing.")
     if motivation == None or motivation.strip() == "":
         raise HTTPError(400, "Motivitaion field is empty or missing.")
     if user_id == None or not user_id.isdigit():
         raise HTTPError(400, "Missing or invalid user id")
 
+    role_id = db.execute("SELECT id FROM roles WHERE shortName = ?", [short_role_name]).fetchone()
+    if role_id is None:
+        raise HTTPError(400, f"Invalid role ({short_role_name})")
+    role_id = role_id["id"]
+
     try:
         db.execute("""
             INSERT
-            INTO applications(username, userId, preferredRole, motivation, applicationTime)
+            INTO applications(username, userId, roleId, motivation, applicationTime)
             VALUES (?, ?, ?, strftime('%s','now'), ?)
-        """, (name, user_id, preferred_role, motivation))
+        """, (name, user_id, role_id, motivation))
     except sqlite3.IntegrityError as e:
         print(e.sqlite_errorcode == sqlite3.SQLITE_CONSTRAINT_UNIQUE)
         print(str(e))
@@ -257,8 +279,8 @@ def manage(db: sqlite3.Connection):
 def approve_application(action: str, user_id: int, db: sqlite3.Connection):
     if action == "accept":
         db.execute("""
-            INSERT INTO users(username, userId, preferredRole, joinTime)
-            SELECT username, userId, preferredRole, strftime('%s','now')
+            INSERT INTO users(username, userId, roleId, joinTime)
+            SELECT username, userId, roleId, strftime('%s','now')
             FROM applications
             WHERE userId = ?;
        """, [user_id])
