@@ -176,6 +176,24 @@ def join_submission(db: sqlite3.Connection):
 
     return template("join_success")
 
+@app.route("/leaderboards.html")
+def leaderboards(db: sqlite3.Connection):
+    # all_members = db.execute("SELECT name FROM members")
+    all_members = [
+        ["a", f"10 days", 1],
+        ["b", f"8 days", 2],
+        ["c", f"6 days", 3],
+        ["d", f"3 days", 4],
+        ["e", f"1 days", 5], 
+        ["f", f"1 days", 6],
+        ["g", f"1 days", 7],
+        ["h", f"1 days", 8],
+        ["i", f"1 days", 9],
+        ["j", f"1 days", 10], 
+        ["k", f"0 days", 11]
+        ]
+    return template("leaderboards.html", all_members=all_members)
+
 @app.route("/<type:re:styles|images>/<filename>")
 def server_static(type, filename):
     return static_file(filename, root=f"./static/{type}/")
