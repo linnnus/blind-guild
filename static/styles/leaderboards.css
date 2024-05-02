@@ -1,0 +1,20 @@
+.leaderboard{
+    width: 100%;
+}
+
+.top_row {
+    background-color: #6e1818;
+    text-align: left;
+}
+
+.row {
+    height: 50px;
+}
+
+.data {
+    background-color: #1c1c1c;
+}
+
+.wrapper {
+    text-align: center;
+}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block head %}
+	<link rel="stylesheet" href="/styles/leaderboards.css">
+{% endblock %}
+
+{% block content %}
+    <div class="wrapper">
+        <h1>Leaderboard</h1>
+        <p>You can swap leadboard using the dropdown (not implemented)</p>    
+    </div>
+    <table class="leaderboard" cellspacing="0">
+        <tr class="top_row row">
+            <th>Character name</th>
+            <th>Time in guild</th>
+            <th>Ranking</th>
+        </tr>
+        {% for character in all_members %}
+        <tr class="row">
+            <td class="data">{{ character[0] }}</td>
+            <td class="data">{{ character[1] }}</td>
+            <td class="data">{{ character[2] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
