@@ -10,6 +10,7 @@ import sqlite3
 from bottle.ext import sqlite
 from beaker.middleware import SessionMiddleware
 import functools
+import datetime
 
 load_dotenv()
 
@@ -54,7 +55,7 @@ cursor.executescript("""
         preferredRole VARCHAR(6) NOT NULL,
         joinTime INT NOT NULL                 -- unix timestamp
     );
-    INSERT OR IGNORE INTO users(userId, preferredRole, joinTime) VALUES (1165955606, 'dps', strftime('%s','now'));
+    INSERT OR IGNORE INTO users(username, userId, preferredRole, joinTime) VALUES ('linuspwn', 1165955606, 'dps', strftime('%s','now'));
 """)
 cursor.close()
 connection.close()
@@ -81,21 +82,34 @@ def index():
 
 @app.route("/leaderboards.html")
 def leaderboards(db: sqlite3.Connection):
-    # all_members = db.execute("SELECT name FROM members")
-    all_members = [
-        ["a", f"10 days", 1],
-        ["b", f"8 days", 2],
-        ["c", f"6 days", 3],
-        ["d", f"3 days", 4],
-        ["e", f"1 days", 5], 
-        ["f", f"1 days", 6],
-        ["g", f"1 days", 7],
-        ["h", f"1 days", 8],
-        ["i", f"1 days", 9],
-        ["j", f"1 days", 10], 
-        ["k", f"0 days", 11]
+    def human_time_since(timestamp: int):
+        dt = datetime.datetime.fromtimestamp(timestamp)
+        delta: datetime.timedelta = datetime.datetime.now() - dt
+
+        seconds = int(delta.total_seconds())
+        periods = [
+            ('year',        60*60*24*365),
+            ('month',       60*60*24*30),
+            ('day',         60*60*24),
+            ('hour',        60*60),
+            ('minute',      60),
         ]
-    return template("leaderboards.html", all_members=all_members)
+
+        strings=[]
+        for period_name, period_seconds in periods:
+            if seconds > period_seconds:
+                period_value , seconds = divmod(seconds, period_seconds)
+                has_s = 's' if period_value > 1 else ''
+                strings.append("%s %s%s" % (period_value, period_name, has_s))
+
+        if strings:
+            return ", ".join(strings)
+        else:
+            has_s = 's' if seconds > 1 else ''
+            return f"{seconds} second{has_s}"
+
+    all_members = db.execute("SELECT username, joinTime FROM users ORDER BY joinTime");
+    return template("leaderboards.html", all_members=all_members, human_time_since=human_time_since)
 
 @app.route("/login")
 def login():
@@ -119,7 +133,7 @@ def login_callback(db: sqlite3.Connection):
     # Ensure user in database
     row = db.execute("SELECT * FROM users WHERE userId = ?", [user_id]).fetchone()
     if row == None:
-        raise HTTPError(404, "User not found")
+        raise HTTPError(404, f"User with id {user_id} not found")
 
     # Store session for subsequent requests
     session = request.environ.get("beaker.session")

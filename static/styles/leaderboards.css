@@ -1,20 +1,25 @@
-.leaderboard{
-    width: 100%;
+.leaderboard {
+    width: 80%;
+    margin: 0 auto;
 }
 
-.top_row {
+.leaderboard thead {
     background-color: #6e1818;
     text-align: left;
 }
 
-.row {
+.leaderboard tr {
     height: 50px;
 }
 
-.data {
+.leaderboard td {
     background-color: #1c1c1c;
 }
 
-.wrapper {
+.leaderboard td, .leaderboard th {
+    padding: 1rem;
+}
+
+.center {
     text-align: center;
 }

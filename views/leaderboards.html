@@ -5,22 +5,26 @@
 {% endblock %}
 
 {% block content %}
-    <div class="wrapper">
-        <h1>Leaderboard</h1>
-        <p>You can swap leadboard using the dropdown (not implemented)</p>    
-    </div>
-    <table class="leaderboard" cellspacing="0">
-        <tr class="top_row row">
-            <th>Character name</th>
-            <th>Time in guild</th>
-            <th>Ranking</th>
-        </tr>
-        {% for character in all_members %}
-        <tr class="row">
-            <td class="data">{{ character[0] }}</td>
-            <td class="data">{{ character[1] }}</td>
-            <td class="data">{{ character[2] }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+	<div class="center">
+		<h1>Leaderboard</h1>
+		<p>See who is the most 1337 guild member!</p>
+	</div>
+	<table class="leaderboard" cellspacing="0">
+		<thead>
+			<tr>
+				<th>Character name</th>
+				<th>Time in guild</th>
+				<th>Ranking</th>
+			</tr>
+		</thead>
+		<tbody>
+			{% for username, join_time in all_members %}
+				<tr>
+					<td>{{ username | e}}</td>
+					<td>{{ human_time_since(join_time) | e }}</td>
+					<td>{{ loop.index }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
 {% endblock %}
