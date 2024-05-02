@@ -9,6 +9,7 @@ import os
 import sqlite3
 from bottle.ext import sqlite
 from beaker.middleware import SessionMiddleware
+import functools
 
 load_dotenv()
 
@@ -31,17 +32,29 @@ connection = sqlite3.connect(DB_PATH)
 cursor = connection.cursor()
 cursor.executescript("""
     CREATE TABLE IF NOT EXISTS applications (
+        id INTEGER PRIMARY KEY,
         username VARCHAR(12) NOT NULL,
+        userId INTEGER UNIQUE NOT NULL,
         preferredRole VARCHAR(6) NOT NULL,
         motivation TEXT NOT NULL,
-        userId INTEGER UNIQUE NOT NULL
+        applicationTime INT NOT NULL          -- unix timestamp
     );
+    INSERT OR IGNORE
+    INTO applications(username, userId, preferredRole, motivation, applicationTime)
+    VALUES
+        ('DillerBlaster69', 0, 'dps',    'fake motivation',    strftime('%s','now')),
+        ('DillerDiller',    1, 'healer', 'fake motivation',    strftime('%s','now')),
+        ('diller123',       2, 'tank',   'fake motivation',    strftime('%s','now')),
+        ('susamongus',      3, 'dps',    'fake motivation #4', strftime('%s','now'));
 
     CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY,
+        username VARCHAR(12) NOT NULL,
         userId INTEGER UNIQUE NOT NULL,
-        role VARCHAR(6) NOT NULL
+        preferredRole VARCHAR(6) NOT NULL,
+        joinTime INT NOT NULL                 -- unix timestamp
     );
-    INSERT OR IGNORE INTO users(userId, role) VALUES (1165955606, 'dps');
+    INSERT OR IGNORE INTO users(userId, preferredRole, joinTime) VALUES (1165955606, 'dps', strftime('%s','now'));
 """)
 cursor.close()
 connection.close()
@@ -164,7 +177,11 @@ def join_submission(db: sqlite3.Connection):
         raise HTTPError(400, "Missing or invalid user id")
 
     try:
-        db.execute("INSERT INTO applications(username, preferredRole, motivation, userId) VALUES (?, ?, ?, ?)", (name, preferred_role, motivation, user_id))
+        db.execute("""
+            INSERT
+            INTO applications(username, userId, preferredRole, motivation, applicationTime)
+            VALUES (?, ?, ?, strftime('%s','now'), ?)
+        """, (name, user_id, preferred_role, motivation))
     except sqlite3.IntegrityError as e:
         print(e.sqlite_errorcode == sqlite3.SQLITE_CONSTRAINT_UNIQUE)
         print(str(e))
@@ -176,23 +193,47 @@ def join_submission(db: sqlite3.Connection):
 
     return template("join_success")
 
-@app.route("/leaderboards.html")
-def leaderboards(db: sqlite3.Connection):
-    # all_members = db.execute("SELECT name FROM members")
-    all_members = [
-        ["a", f"10 days", 1],
-        ["b", f"8 days", 2],
-        ["c", f"6 days", 3],
-        ["d", f"3 days", 4],
-        ["e", f"1 days", 5], 
-        ["f", f"1 days", 6],
-        ["g", f"1 days", 7],
-        ["h", f"1 days", 8],
-        ["i", f"1 days", 9],
-        ["j", f"1 days", 10], 
-        ["k", f"0 days", 11]
-        ]
-    return template("leaderboards.html", all_members=all_members)
+def require_authentication(fn):
+    """Decorator that ensures the client is logged in"""
+    @functools.wraps(fn)
+    def wrapped(db: sqlite3.Connection, *args, **kwargs):
+        # Ensure authentication
+        session = request.environ.get("beaker.session")
+        print(session)
+        user_id = session.get("user_id", None)
+        if user_id is None:
+            raise HTTPError(403, "Must be logged in! (missing cookie)")
+        user = db.execute("SELECT * FROM users WHERE userId = ?", [user_id]).fetchone()
+        if user is None:
+            raise HTTPError(403, "Must be logged in! (unknown user)")
+
+        # Wrapped function may or may not want this
+        kwargs["db"] = db
+
+        return fn(*args, **kwargs)
+    return wrapped
+
+@require_authentication
+@app.route("/manage.html")
+def manage(db: sqlite3.Connection):
+    applications = db.execute("SELECT * FROM applications").fetchall();
+    return template("manage", applications=applications)
+
+
+@require_authentication
+@app.route("/manage/<action:re:accept|reject>/<user_id:int>", method="POST")
+def approve_application(action: str, user_id: int, db: sqlite3.Connection):
+    if action == "accept":
+        db.execute("""
+            INSERT INTO users(username, userId, preferredRole, joinTime)
+            SELECT username, userId, preferredRole, strftime('%s','now')
+            FROM applications
+            WHERE userId = ?;
+       """, [user_id])
+    print(user_id)
+    db.execute("DELETE FROM applications WHERE userId = ?", [user_id])
+
+    return f"Application {action}ed!"
 
 @app.route("/<type:re:styles|images>/<filename>")
 def server_static(type, filename):

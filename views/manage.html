@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block head %}
+	<link rel="stylesheet" href="/styles/manage.css">
+	<script type="module">
+		// Progressive enhancement – perform form requests without leaving page.
+
+		for (const application of document.querySelectorAll(".applications__item")) {
+			for (const form of application.querySelectorAll("form.action")) {
+				form.addEventListener("submit", async (event) => {
+					event.preventDefault();
+
+					if (!confirm("Are you sure?")) {
+						return;
+					}
+
+					let ok;
+					try {
+						const response = await fetch(form.action, {
+							method: "POST",
+							data: new FormData(form),
+						});
+						ok = response.ok;
+					} catch {
+						ok = false;
+					}
+
+					if (ok) {
+						application.remove();
+					} else {
+						alert("Something went wrong >w<");
+					}
+				});
+			}
+		}
+	</script>
+{% endblock %}
+
+{% block content %}
+	<h1>Manage applications</h1>
+	<div class="applications">
+		{% for application in applications %}
+			<section class="applications__item">
+				<span class="application__username">{{ application.username | e }}</span>
+				<p>{{ application.motivation | e }}</p>
+				<form class="action" method="POST" action="/manage/reject/{{ application.userId | e }}">
+					<button class="action__button action__button--reject">Reject</button>
+				</form>
+				<form class="action" method="POST" action="/manage/accept/{{ application.userId | e }}">
+					<button class="action__button action__button--accept">Accept</button>
+				</form>
+			</section>
+		{% endfor %}
+	</div>
+{% endblock %}
