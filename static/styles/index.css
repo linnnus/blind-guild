@@ -25,7 +25,14 @@
 	color: white;
 }
 
+@font-face {
+	font-family: DragonHunter;
+	src: url(/fonts/dragon-hunter.otf);
+}
+
 .hero__title {
+	font-family: DragonHunter;
+	font-weight: 300;
 	font-size: 5rem;
 	margin: 1rem;
 

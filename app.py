@@ -285,7 +285,7 @@ def approve_application(action: str, user_id: int, db: sqlite3.Connection):
 
     return f"Application {action}ed!"
 
-@app.route("/<type:re:styles|images>/<filename>")
+@app.route("/<type:re:styles|images|fonts>/<filename>")
 def server_static(type, filename):
     return static_file(filename, root=f"./static/{type}/")
 
