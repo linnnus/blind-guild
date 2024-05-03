@@ -198,7 +198,6 @@ def join_form(db: sqlite3.Connection):
         raise HTTPError(404, "The account you logged in does not have a WoW profile")
     response.raise_for_status()
     data = response.json()
-    print(response.text)
     characters = []
     for account in data["wow_accounts"]:
         for character in account["characters"]:
@@ -210,6 +209,7 @@ def join_form(db: sqlite3.Connection):
     return template("join_form", user_id=user_id, characters=characters, roles=roles)
 
 @app.route("/callback", method="POST")
+@app.route("/join_callback", method="POST")
 def join_submission(db: sqlite3.Connection):
     name = request.forms.get("name")
     short_role_name = request.forms.get("shortRoleName")
@@ -237,8 +237,6 @@ def join_submission(db: sqlite3.Connection):
             VALUES (?, ?, ?, strftime('%s','now'), ?)
         """, (name, user_id, role_id, motivation))
     except sqlite3.IntegrityError as e:
-        print(e.sqlite_errorcode == sqlite3.SQLITE_CONSTRAINT_UNIQUE)
-        print(str(e))
         if e.sqlite_errorcode == sqlite3.SQLITE_CONSTRAINT_UNIQUE:
             # The database (model) rejected the application because the unique constraint wasn't met!
             raise HTTPError(400, "You've already submitted an application!")
@@ -253,7 +251,6 @@ def require_authentication(fn):
     def wrapped(db: sqlite3.Connection, *args, **kwargs):
         # Ensure authentication
         session = request.environ.get("beaker.session")
-        print(session)
         user_id = session.get("user_id", None)
         if user_id is None:
             raise HTTPError(403, "Must be logged in! (missing cookie)")
@@ -284,7 +281,6 @@ def approve_application(action: str, user_id: int, db: sqlite3.Connection):
             FROM applications
             WHERE userId = ?;
        """, [user_id])
-    print(user_id)
     db.execute("DELETE FROM applications WHERE userId = ?", [user_id])
 
     return f"Application {action}ed!"
